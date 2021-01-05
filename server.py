@@ -51,7 +51,7 @@ result = parser.parse_args()
 #         #plaintext
 #         content = message.decode('utf-8')
 
-def pairServer(train):
+def pairServer(train,loadfile='morph_data.json'):
     Morphologies = morphologies.Morphologies(train=train,nepoch=5)
     context = zmq.Context()
     socket = context.socket(zmq.PAIR)
@@ -61,6 +61,10 @@ def pairServer(train):
     if train:
         Morphologies.predict_morph_values()
         Morphologies.save_to_file()
+    else:
+        with open(loadfile) as f:
+            morph_dict = json.load(f)
+        Morphologies.morph_data = morph_dict
     thruster_keys = Morphologies.choose_morphologies()
     socket.send(thruster_keys.encode('utf-8'))
 
@@ -80,7 +84,9 @@ def pairServer(train):
             socket.send(thruster_keys.encode('utf-8'))
             if train:
                 Morphologies.episode += 1
+                Morphologies.gain = min(1,Morphologies.gain+5e-5)
                 Morphologies.train_conv_net()
+                print('^^^ Episode %d    Efficiency Penalty Gain: %f \n' %(Morphologies.episode,Morphologies.gain))
         else:
             if train:
                 key, mean, std, n, episode = handleMessage(message)
@@ -103,8 +109,7 @@ def handleMessage(message):
     return key, mean, std, n, episode
 
 def main():
-    train = True
-    pairServer(train)
+    pairServer(train=True,loadfile='old_morph_datas/morph_data_12_18.json')
 
 if __name__ == "__main__":
     main()

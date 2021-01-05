@@ -24,6 +24,7 @@ class Morphologies():
         self.epsilon = 0.75
         self.gamma = 0.99
         self.episode = 0
+        self.gain = 0
         self.nepoch = nepoch
         #--------------------#
 
@@ -162,14 +163,15 @@ class Morphologies():
                 optimizer.zero_grad()
                 morph, val = data
                 #print(morph.shape)
-                morph = morph.cuda()
                 if self.classify:
-                    val = val.float().cuda()
+                    val = val.long().cuda()
                 else:
+                    val = val - rotor_penalty(morph,self.gain)
                     val = val.float().unsqueeze(1).cuda()
+                morph = morph.cuda()
                 pred_val = self.network(morph) #forward pass
                 if self.classify:
-                    loss_fn = torch.nn.BCEWithLogitsLoss()
+                    loss_fn = torch.nn.NLLLoss()
                 else:
                     loss_fn = torch.nn.SmoothL1Loss()
                 #penalty = false_neg_penalty(pred_val,val)
@@ -177,8 +179,7 @@ class Morphologies():
                 loss_net.backward()
                 train_loss.update(loss_net.item())
                 optimizer.step() #gradient update
-                print('[%d: %d/%d] train loss:  %f ' %(epoch, i, len(dataset)/self.batch_size, loss_net.item()))
-
+                print('[%d: %d/%d] train loss:  %f' %(epoch, i, len(dataset)/self.batch_size, loss_net.item()))
             # #VALIDATION MODE
             # if not self.train or epoch == (self.nepoch-1) or epoch == 0:
             #     val_loss.reset()
@@ -227,7 +228,10 @@ class Morphologies():
                     #morph = torch.Tensor(key).unsqueeze(0).cuda()
                     morph = thruster_key_to_morph(key).unsqueeze(0).cuda()
                     pred_val = self.network(morph)
-                    data["pred_val"] = pred_val.tolist()[0]
+                    if self.classify:
+                        data["pred_val"] = pred_val.tolist()
+                    else:
+                        data["pred_val"] = pred_val.tolist()[0]
                     data["pred_history"].append(pred_val.tolist()[0])
                 else:
                     data["pred_val"] = -np.inf
@@ -264,8 +268,8 @@ class Morphologies():
         print('Saved morphology dict to file')
 
 if __name__ == "__main__":
-    #morph_path = "./old_morph_datas/morph_data_10_14_2.json"
-    morph_path = "./conv_only/morph_data_conv_only_recent_100.json"
+    morph_path = "./old_morph_datas/morph_data_fake_allpos.json"
+    #morph_path = "./conv_only/old_redo.json"
     Morphologies = Morphologies(train=False,nepoch=100,morph_path = morph_path,classify=True)
     now = datetime.datetime.now()
     save_path = now.isoformat().replace(":","_")
@@ -278,25 +282,4 @@ if __name__ == "__main__":
     #Morphologies.train_sklearn()
     Morphologies.train_conv_net()
     Morphologies.predict_morph_values()
-    Morphologies.save_to_file(path='./conv_only/old_redo_class.json')
-
-    #key_str = Morphologies.choose_morphologies()
-    #print(key_str)
-
-
-    #print(Morphologies.morph_data[0])
-    #f = open('morph_data.json','r')
-    #b = json.load(f)
-    #print(b[0])
-    # morph = np.array([
-    #     [[0,0,0],
-    #     [255,0,255],
-    #     [0,0,0]],
-
-    #     [[0,255,0],
-    #     [0,0,0],
-    #     [0,255,0]]
-    #     ])
-    # key = morphologies.morph_to_thruster_key(morph)
-    # print(key)
-    # print(morphologies.thruster_key_to_morph(key))
+    Morphologies.save_to_file(path='./conv_only/fake_allpos.json')

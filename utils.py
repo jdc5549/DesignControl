@@ -97,28 +97,51 @@ def weights_init(m):
 
 def val_to_class(val):
     out = None
-    # if val <= 0.2:
-    #     out = torch.tensor([1,0])
-    # else:
-    #     out = torch.tensor([0,1])
-    #     #out = 0
-    if val < 0:
-        out = torch.tensor([1,0,0,0,0])
-    elif val > 0 and val <= 0.2:
-        out = torch.tensor([0,1,0,0,0])
-        #out = 1
-    if val > 0.2 and val <= 0.4:
-        out = torch.tensor([0,0,1,0,0])
-        #out = 2
-    if val > 0.4 and val <= 0.6:
-        out = torch.tensor([0,0,0,1,0])
-        #out = 3
-    if val > 0.6:
-        out = torch.tensor([0,0,0,0,1])
-        #out = 4
+    if val <= 0.2:
+        #out = torch.tensor([1,0])
+        out = 0
+    else:
+        #out = torch.tensor([0,1])
+        out = 1
+    # if val < 0:
+    #     out = torch.tensor([1,0,0,0,0])
+    # elif val > 0 and val <= 0.2:
+    #     out = torch.tensor([0,1,0,0,0])
+    #     #out = 1
+    # if val > 0.2 and val <= 0.4:
+    #     out = torch.tensor([0,0,1,0,0])
+    #     #out = 2
+    # if val > 0.4 and val <= 0.6:
+    #     out = torch.tensor([0,0,0,1,0])
+    #     #out = 3
+    # if val > 0.6:
+    #     out = torch.tensor([0,0,0,0,1])
+    #     #out = 4
     return out
     # if val > 0.8 && val <= 1:
     #     out = 5
+
+def val_to_logits(val):
+    out = None
+    if val <= 0.2:
+        out = torch.tensor([1,0])
+    else:
+        out = torch.tensor([0,1])
+    # if val < 0:
+    #     out = torch.tensor([1,0,0,0,0])
+    # elif val > 0 and val <= 0.2:
+    #     out = torch.tensor([0,1,0,0,0])
+    #     #out = 1
+    # if val > 0.2 and val <= 0.4:
+    #     out = torch.tensor([0,0,1,0,0])
+    #     #out = 2
+    # if val > 0.4 and val <= 0.6:
+    #     out = torch.tensor([0,0,0,1,0])
+    #     #out = 3
+    # if val > 0.6:
+    #     out = torch.tensor([0,0,0,0,1])
+    #     #out = 4
+    return out
 
 class AverageValueMeter(object):
 	"""Computes and stores the average and current value"""
@@ -152,12 +175,18 @@ def false_neg_penalty(pred,label):
         if torch.argmax(pred[i]) == 0 and torch.argmax(label[i]) == 1:
             penalty += lam
     return penalty
-        
+
+def rotor_penalty(morphs,gain):
+    lam = 0.1
+    penalties = torch.zeros(morphs.shape[0])
+    for i in range(morphs.shape[0]):
+        key = np.array(morph_to_thruster_key(morphs[i]))
+        num_rotors = np.linalg.norm(key,1)
+        penalty = gain*lam*num_rotors
+        penalties[i] = penalty
+    return penalties
 
 if __name__ == '__main__':
-	key = [1,0,-1,0,1,0,-1,0]
-	print(key)
-	morph = thruster_key_to_morph(key)
-	print(morph)
-	new_key = morph_to_thruster_key(morph)
-	print(new_key)
+    key = [1,0,-1,0,1,0,-1,0]
+    print(key)
+    print(rotor_penalty(key))

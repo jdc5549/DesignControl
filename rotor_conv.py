@@ -9,10 +9,10 @@ class RotorConvNet(nn.Module):
         self.batch_size = batch_size
         self.classify = classify
         self.conv = nn.Conv2d(self.in_channels, self.num_filters, 3) 
-        self.bn = nn.BatchNorm2d(self.num_filters)
+        #self.bn = nn.BatchNorm2d(self.num_filters)
         self.relu = nn.ReLU()
         if self.classify:
-            self.fc = nn.Linear(self.num_filters,5)
+            self.fc = nn.Linear(self.num_filters,2)
             self.sm = nn.Softmax()
         else:
             self.fc = nn.Linear(self.num_filters,1)
