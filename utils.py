@@ -94,7 +94,6 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
 
-
 def val_to_class(val):
     out = None
     if val <= 0.2:
@@ -186,7 +185,23 @@ def rotor_penalty(morphs,gain):
         penalties[i] = penalty
     return penalties
 
+def testing_morph_sample():
+    import matplotlib.pyplot as plt
+    import json
+    import random
+    morph_path = "morph_data_10_14.json"
+    with open(morph_path) as f:
+        morph_dict = json.load(f)
+    rotor_nums = np.zeros(9)
+    samples = 100000
+    for i in range(samples):
+        rand_index = random.randint(0,len(morph_dict)-1)
+        morph = morph_dict[rand_index]["morph"]
+        num_rotors = int(np.linalg.norm(morph,1))
+        rotor_nums[num_rotors] += 1
+    rotor_nums = rotor_nums/samples
+    print('Zero Rotor: %f \n One Rotor: %f \n Two Rotor: %f \n Three Rotor %f \n Four Rotor %f \n Five Rotor %f \n Six Rotor %f \n Seven Rotor %f \n Eight Rotor %f \n' 
+        %(rotor_nums[0],rotor_nums[1],rotor_nums[2],rotor_nums[3],rotor_nums[4],rotor_nums[5],rotor_nums[6],rotor_nums[7],rotor_nums[8])) 
+
 if __name__ == '__main__':
-    key = [1,0,-1,0,1,0,-1,0]
-    print(key)
-    print(rotor_penalty(key))
+    testing_morph_sample()

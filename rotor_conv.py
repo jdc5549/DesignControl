@@ -23,9 +23,9 @@ class RotorConvNet(nn.Module):
         #x = torch.reshape(x,(batch_size,self.in_channels,3,3))
         #print(x.shape)
         x = torch.unsqueeze(x,1)
-        x = self.conv(x)
+        x = self.conv(x).squeeze()
         #x = self.bn(x)
-        x = self.relu(x).squeeze()
+        #x = self.relu(x).squeeze()
         #print(x.shape)
         #x = x.reshape(batch_size*self.num_filters)
         #print(x.shape)
@@ -35,6 +35,13 @@ class RotorConvNet(nn.Module):
         #x = (x+100)/(220) * 2.4 - 0.4
         #print(x.shape)
         return x #torch.cuda.FloatTensor(x)
+
+    def reset_fc(self):
+        if self.classify:
+            self.fc = nn.Linear(self.num_filters,2)
+            self.sm = nn.Softmax()
+        else:
+            self.fc = nn.Linear(self.num_filters,1)
 
 
 class RotorFullyConnected(nn.Module):
@@ -75,3 +82,8 @@ class RotorFullyConnected(nn.Module):
 
 
         return x #torch.cuda.FloatTensor(x)
+
+if __name__ == "__main__":
+    model = RotorConvNet(16,classify=False)
+    model.reset_fc()
+

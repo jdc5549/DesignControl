@@ -12,7 +12,7 @@ import morphologies
 from utils import *
 
 class Morphology_Dataset(data.Dataset):
-    def __init__(self, morphology_data,train = True,classify=True):
+    def __init__(self, morphology_data,train = True,classify=False):
         self.train = train
         self.classify = classify
         self.morphology_data = morphology_data
@@ -31,7 +31,7 @@ class Morphology_Dataset(data.Dataset):
             if len(data["val_means"]) > 0:
                 if self.classify:
                     self.res.append([data["morph"],val_to_class(data["val_means"][-1])])
-                    #c = np.argmax(val_to_class(data["val_means"][-1]))
+                    # c = val_to_class(data["val_means"][-1])
                     # if c == 1:
                     #     for i in range(10):
                     #         self.res.append([data["morph"],val_to_class(data["val_means"][-1])])
@@ -39,6 +39,7 @@ class Morphology_Dataset(data.Dataset):
                     #     self.res.append([data["morph"],val_to_class(data["val_means"][-1])])
                 else:
                     #self.res.append([data["morph"],np.mean(data["val_means"])])
+                    #penalty = rotor_penalty(data["morph"])
                     self.res.append([data["morph"],data["val_means"][-1]])
 
         #self.train_len = int(len(self.res) * 0.8)
@@ -81,6 +82,8 @@ if __name__  == '__main__':
         morph_dict = json.load(f)
 
     d = Morphology_Dataset(morph_dict, train=True)
-    data = d.__getitem__(12)
-    print(data)
-    print(d.__len__())
+    morph, val = d.__getitem__(12)
+    print(morph)
+    print(val)
+    new_val = val - rotor_penalty(morph,0.01)
+    print(new_val)

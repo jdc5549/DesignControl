@@ -84,19 +84,31 @@ def pairServer(train,loadfile='morph_data.json'):
             socket.send(thruster_keys.encode('utf-8'))
             if train:
                 Morphologies.episode += 1
-                Morphologies.gain = min(1,Morphologies.gain+5e-5)
+                #Morphologies.gain = min(1,Morphologies.gain+0.00125)
+                switch_ep = 750
+                if Morphologies.episode < switch_ep:
+                    Morphologies.gain = 0
+                elif Morphologies.episode == switch_ep:
+                    Morphologies.epsilon = 1
+                    Morphologies.gain = 1
+                else:
+                    Morphologies.gain = 1
+
+                if Morphologies.episode % 50 == 0:
+                    Morphologies.network.reset_fc()
+                    Morphologies.network.cuda()
                 Morphologies.train_conv_net()
-                print('^^^ Episode %d    Efficiency Penalty Gain: %f \n' %(Morphologies.episode,Morphologies.gain))
+                #print('^^^ Episode %d    Efficiency Penalty Gain: %f,   Epsilon: %f' %(Morphologies.episode,Morphologies.gain,Morphologies.epsilon))
         else:
             if train:
                 key, mean, std, n, episode = handleMessage(message)
+                print("Episode %d Key %s with n=%d: val = %f"%(episode, str(key), n, mean))
                 for data in Morphologies.morph_data:
                     if data["morph"] == key:
                             data["val_means"].append(mean)
                             data["val_stds"].append(std)
                             data["sample_num"].append(n)
                             data["episodes"].append(episode)
-                        #print(data)
 
 def handleMessage(message):
     parts = message.split(',')

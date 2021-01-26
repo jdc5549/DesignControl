@@ -14,14 +14,14 @@ from rotor_conv import *
 
 
 class Morphologies():       
-    def __init__(self,model='',morph_path = './morph_data.json',train=True,nepoch=5,classify=False):
+    def __init__(self,model='',morph_path = './morph_data.json',train=True,nepoch=2,classify=False):
 
         self.num_agents = 20
         self.batch_size = 16
         self.train = train
         self.classify = classify
         #-----Choose Morphology Params-----#
-        self.epsilon = 0.75
+        self.epsilon = 1
         self.gamma = 0.99
         self.episode = 0
         self.gain = 0
@@ -102,7 +102,7 @@ class Morphologies():
                     rotated_key = rotate_to_ref(sorted_data[chosen_index]["morph"])
                     chosen_morphs.append(rotated_key)
                     chosen_index += 1
-            self.epsilon = max(self.epsilon - 0.025, 0.025)
+            self.epsilon = max(self.epsilon - 0.005, 0.2)
             keys = fixed_morphs + chosen_morphs
         else:
             sorted_data_len = sorted(self.morph_data, key =lambda i: len(i['val_means']),reverse=True)
@@ -179,7 +179,8 @@ class Morphologies():
                 loss_net.backward()
                 train_loss.update(loss_net.item())
                 optimizer.step() #gradient update
-                print('[%d: %d/%d] train loss:  %f' %(epoch, i, len(dataset)/self.batch_size, loss_net.item()))
+                if i % 100 == 0:
+                    print('[%d: %d/%d] train loss:  %f' %(epoch, i, len(dataset)/self.batch_size, loss_net.item()))
             # #VALIDATION MODE
             # if not self.train or epoch == (self.nepoch-1) or epoch == 0:
             #     val_loss.reset()
