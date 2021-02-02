@@ -40,14 +40,23 @@ def thruster_key_to_morph(key):
 
 def thruster_keys_to_string(keys):
     thrusters = ''
+    keylen = len(keys[0])
     for i in range(len(keys)):
         thrusters += '['
-        for j in range(7):
+        for j in range(keylen-1):
             thrusters += str(keys[i][j]) + ' '
-        thrusters += str(keys[i][7]) + ']'
+        thrusters += str(keys[i][keylen-1]) + ']'
         if(i < len(keys)-1):
             thrusters += ','   
     return thrusters
+
+# def params_to_string(params):
+#     p = ''
+#     for i in range(len(params))
+#         p += '['
+#         for j in range(len(params[0])):
+#             p += str(params[])
+
 
 def get_morph_rotations(mask):
     rot_list = [mask]

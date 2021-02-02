@@ -16,7 +16,7 @@ from rotor_conv import *
 class Morphologies():       
     def __init__(self,model='',morph_path = './morph_data.json',train=True,nepoch=2,classify=False):
 
-        self.num_agents = 20
+        self.num_agents = 4#20
         self.batch_size = 16
         self.train = train
         self.classify = classify
@@ -61,11 +61,12 @@ class Morphologies():
                 self.morph_data.append({"morph" : morph_key, "val_means" : [], "val_stds": [], "sample_num" : [], "episodes" : [], "pred_val": 0, "pred_history": []})
 
             # =============Set up conv net logging====================== #
-            now = datetime.datetime.now()
-            save_path = now.isoformat().replace(":","_")
-            self.top_dir = os.path.join('train_log', save_path)
-            if not os.path.exists(self.top_dir):
-                os.mkdir(self.top_dir)           
+            if train:
+                now = datetime.datetime.now()
+                save_path = now.isoformat().replace(":","_")
+                self.top_dir = os.path.join('train_log', save_path)
+                if not os.path.exists(self.top_dir):
+                    os.mkdir(self.top_dir)           
             # ========================================================== #
         else:
             with open(self.morph_path) as f:
@@ -105,7 +106,7 @@ class Morphologies():
             self.epsilon = max(self.epsilon - 0.005, 0.2)
             keys = fixed_morphs + chosen_morphs
         else:
-            sorted_data_len = sorted(self.morph_data, key =lambda i: len(i['val_means']),reverse=True)
+            sorted_data_len = sorted(self.morph_data, key =lambda i: i['pred_val'],reverse=True)
             for i in range(self.num_agents):
                 rotated_key = rotate_to_ref(sorted_data_len[chosen_index]["morph"])
                 chosen_morphs.append(rotated_key)
